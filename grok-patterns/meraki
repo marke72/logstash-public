@@ -19,3 +19,4 @@ URLS2 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} %{WORD:even
 VPN1 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events %{WORD:event_type} user id '%{EMAILADDRESS:user}' local ip %{IP:local_ip} connected from %{IP:src_ip}
 VPN2 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events %{DATA:event_type}: %{GREEDYDATA:message_meraki}
 FILTER %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events %{WORD:event_type} url='{GREEDYDATA:url}...' category{NUMBER:category_value:int}='{GREEDYDATA:category}' server='{IP:dst_ip}:{NUMBER:dst_port:int}'
+ROUTE %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events type=%{DATA:event_type} peer_type='%{DATA:peer_type}' peer='%{MAC:mac}' connection_status='%{WORD:connection_status}'
