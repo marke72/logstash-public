@@ -1,0 +1,21 @@
+# IDS Alerts
+IDS %{GREEDYDATA} %{DATA:appliance_name} %{DATA:alert_type} signature=%{GREEDYDATA:signature_id} priority=%{NUMBER:priority:int} timestamp=%{NUMBER:timestamp:float} shost=%{GREEDYDATA:src_host} direction=%{WORD:direction} protocol=%{WORD:protocol}/ip src=%{IP:src_ip}:%{NUMBER:src_port:int} dst=%{IP:dst_ip}:%{NUMBER:dst_port:int} message: %{GREEDYDATA:message}
+
+# Flows
+FLOWS_MX1 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} %{WORD:event_type} src=%{IP:src_ip} dst=%{IP:dst_ip} mac=%{MAC:mac} protocol=%{WORD:protocol_meraki} sport=%{NUMBER:src_port:int} dport=%{NUMBER:dst_port:int} pattern: %{DATA:action} %{GREEDYDATA:pattern}
+FLOWS_MX2 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} %{WORD:event_type} src=%{IP:src_ip} dst=%{IP:dst_ip} protocol=%{WORD:protocol_meraki} type=%{NUMBER:type_meraki:int} pattern: %{DATA:action} %{GREEDYDATA:pattern}
+FLOWS_MX3 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} %{WORD:event_type} src=%{IP:src_ip} dst=%{IP:dst_ip} mac=%{MAC:mac} protocol=%{WORD:protocol_meraki} type=%{NUMBER:type_meraki:int} pattern: %{DATA:action} %{GREEDYDATA:pattern}
+FLOWS_Z1 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} %{WORD:event_type} src=%{IP:src_ip} dst=%{IP:dst_ip} protocol=%{WORD:protocol_meraki} sport=%{NUMBER:src_port:int} dport=%{NUMBER:dst_port:int} pattern: %{DATA:action} %{GREEDYDATA:pattern}
+FLOWS_AP1 %{GREEDYDATA} %{NUMBER} %{DATA:appliance_name} %{WORD:event_type} %{DATA:action} src=%{IP:src_ip} dst=%{IP:dst_ip} mac=%{MAC:mac} protocol=
+FLOWS_AP2 %{FLOWS_AP1}%{DATA:protocol_meraki}
+FLOWS_AP3 %{FLOWS_AP2} type=
+FLOWS_AP4 %{GREEDYDATA} %{NUMBER} %{DATA:appliance_name} %{WORD:event_type} %{DATA:action} src=%{IP:src_ip} dst=%{IP:dst_ip} mac=%{MAC:mac} protocol=%{DATA:protocol_meraki} sport=%{NUMBER:src_port:int} dport=%{NUMBER:dst_port:int}
+
+# URL Events
+URLS1 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} %{WORD:event_type} src=%{IP:src_ip}:%{NUMBER:src_port:int} dst=%{IP:dst_ip}:%{NUMBER:dst_port:int} mac=%{MAC:mac} request: %{WORD:request} %{GREEDYDATA:url}
+URLS2 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} %{WORD:event_type} src=%{IP:src_ip}:%{NUMBER:src_port:int} dst=%{IP:dst_ip}:%{NUMBER:dst_port:int} mac=%{MAC:mac} agent='%{GREEDYDATA:agent}' request: %{WORD:request} %{GREEDYDATA:url}
+
+# Appliance Events
+VPN1 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events %{WORD:event_type} user id '%{EMAILADDRESS:user}' local ip %{IP:local_ip} connected from %{IP:src_ip}
+VPN2 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events %{DATA:event_type}: %{GREEDYDATA:message_meraki}
+FILTER %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events %{WORD:event_type} url='{GREEDYDATA:url}...' category{NUMBER:category_value:int}='{GREEDYDATA:category}' server='{IP:dst_ip}:{NUMBER:dst_port:int}'
