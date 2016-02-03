@@ -1,0 +1,1 @@
+PUREMESSAGE Blocked message '<%{DATA}@%{DATA:sender_domain}>' for invalid recipients '%{DATA:recipient_email}'
