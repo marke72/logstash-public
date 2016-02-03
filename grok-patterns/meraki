@@ -19,7 +19,11 @@ URLS1 %{URLS} request: %{WORD:request} %{GREEDYDATA:url}
 URLS2 %{URLS} agent='%{GREEDYDATA:agent}' request: %{WORD:request} %{GREEDYDATA:url}
 
 # Appliance Events
-VPN1 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events %{WORD:event_type} user id '%{EMAILADDRESS:user}' local ip %{IP:local_ip} connected from %{IP:src_ip}
-VPN2 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events %{DATA:event_type}: %{GREEDYDATA:message_meraki}
-FILTER %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events %{DATA:event_type} url='%{DATA:url}...' category%{NUMBER:category_value:int}='%{GREEDYDATA:category}' server='%{IP:dst_ip}:%{NUMBER:dst_port:int}'
-ROUTE %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events type=%{DATA:event_type} peer_type='%{DATA:peer_type}' peer='%{MAC:mac}' connection_status='%{WORD:connection_status}'
+APPLIANCE %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events %{DATA:event_type}
+VPN1 %{APPLIANCE} user id '%{EMAILADDRESS:user}' local ip %{IP:local_ip} connected from %{IP:src_ip}
+VPN2 %{APPLIANCE}: %{GREEDYDATA:message_meraki}
+FILTER %{APPLIANCE} url='%{DATA:url}...' category%{NUMBER:category_value:int}='%{GREEDYDATA:category}' server='%{IP:dst_ip}:%{NUMBER:dst_port:int}'
+SECURITY %{APPLIANCE} url='%{GREEDYDATA:url}' action='%{WORD:action}'
+DHCP %{APPLIANCE} %{WORD:dhcp_status} (for mac %{MAC:client_mac}|of ip %{IP:src_ip} from server mac %{MAC:server_mac} for client mac %{MAC:client_mac} from router %{IP:gateway} on subnet %{IP:subnet}($| with dns %{IP:dns1}($|, %{IP:dns2})))
+ROUTE1 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events type=%{DATA:event_type} peer_type='%{DATA:peer_type}' peer='%{MAC:mac}' connection_status='%{WORD:connection_status}'
+ROUTE2 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events type=%{DATA:event_type} vpn_type='%{DATA:vpn_type}' peer_contact='%{IP:src_ip}:%{NUMBER:src_port:int}' peer_ident='%{DATA:peer_ident}' connectivity='%{WORD:connectivity}'
