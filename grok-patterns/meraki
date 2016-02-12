@@ -1,5 +1,6 @@
 # IDS Alerts
-IDS %{GREEDYDATA} %{DATA:appliance_name} %{DATA:alert_type} signature=%{GREEDYDATA:signature_id} priority=%{NUMBER:priority:int} timestamp=%{NUMBER:timestamp:float} shost=%{GREEDYDATA:src_host} direction=%{WORD:direction} protocol=%{WORD:protocol}/ip src=%{IP:src_ip}:%{NUMBER:src_port:int} dst=%{IP:dst_ip}:%{NUMBER:dst_port:int} message: %{GREEDYDATA:message}
+IDS %{GREEDYDATA} %{DATA:appliance_name} %{DATA:alert_type} signature=%{GREEDYDATA:signature_id} priority=%{NUMBER:priority:int} timestamp=%{NUMBER:timestamp:float} shost=%{GREEDYDATA:src_host} direction=%{WORD:direction} protocol=%{WORD:protocol_meraki}/ip src=%{IP:src_ip}:%{NUMBER:src_port:int} dst=%{IP:dst_ip}:%{NUMBER:dst_port:int} message: %{GREEDYDATA:message_meraki}
+IDS %{GREEDYDATA} %{DATA:appliance_name} %{DATA:alert_type} signature=%{GREEDYDATA:signature_id} priority=%{NUMBER:priority:int} timestamp=%{NUMBER:timestamp:float} dhost=%{GREEDYDATA:dst_host} direction=%{WORD:direction} protocol=%{WORD:protocol_meraki}/ip src=%{IP:src_ip}:%{NUMBER:src_port:int} dst=%{IP:dst_ip}:%{NUMBER:dst_port:int} message: %{GREEDYDATA:message_meraki}
 
 # Flows
 FLOWS %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} %{WORD:event_type} src=%{IP:src_ip} dst=%{IP:dst_ip}
@@ -24,6 +25,7 @@ VPN1 %{APPLIANCE} user id '%{EMAILADDRESS:user}' local ip %{IP:local_ip} connect
 VPN2 %{APPLIANCE}: %{GREEDYDATA:message_meraki}
 FILTER %{APPLIANCE} url='%{DATA:url}...' category%{NUMBER:category_value:int}='%{GREEDYDATA:category}' server='%{IP:dst_ip}:%{NUMBER:dst_port:int}'
 SECURITY %{APPLIANCE} url='%{GREEDYDATA:url}' action='%{WORD:action}'
-DHCP %{APPLIANCE} %{WORD:dhcp_status} (for mac %{MAC:client_mac}|of ip %{IP:src_ip} from server mac %{MAC:server_mac} for client mac %{MAC:client_mac} from router %{IP:gateway} on subnet %{IP:subnet}($| with dns %{IP:dns1}($|, %{IP:dns2})))
+DHCP1 %{APPLIANCE} %{WORD:dhcp_status} (for mac %{MAC:client_mac}|of ip %{IP:src_ip} from server mac %{MAC:server_mac} for client mac %{MAC:client_mac} from router %{IP:gateway} on subnet %{IP:subnet}($| with dns %{IP:dns1}($|, %{IP:dns2})))
+DHCP2 %{APPLIANCE} %{WORD:dhcp_status} of ip %{IP:src_ip} from server mac %{MAC:server_mac} for client mac %{MAC:client_mac} on subnet %{IP:subnet}
 ROUTE1 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events type=%{DATA:event_type} peer_type='%{DATA:peer_type}' peer='%{MAC:mac}' connection_status='%{WORD:connection_status}'
 ROUTE2 %{GREEDYDATA} %{NUMBER:timestamp:float} %{DATA:appliance_name} events type=%{DATA:event_type} vpn_type='%{DATA:vpn_type}' peer_contact='%{IP:src_ip}:%{NUMBER:src_port:int}' peer_ident='%{DATA:peer_ident}' connectivity='%{WORD:connectivity}'
