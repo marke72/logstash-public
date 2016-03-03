@@ -1,2 +1,6 @@
-ACCESS1 %{DATA:timestamp} %{NUMBER:request_msec} %{IP:src_ip} %{WORD}/%{NUMBER:response_status:int} %{NUMBER:response_size:int} %{WORD:http_method} %{URIPROTO:http_proto}://%{DATA:request} - %{WORD}/(%{IPV4:dst_ip}|%{IPV6:dst_ipv6}|-) (%{GREEDYDATA:content_type}|-)
-ACCESS2 %{DATA:timestamp} %{NUMBER:request_msec} %{IP:src_ip} %{WORD}/%{NUMBER:response_status:int} %{NUMBER:response_size:int} %{WORD:http_method} %{DATA:request} - %{WORD}/(%{IPV4:dst_ip}|%{IPV6:dst_ipv6}|-) (%{GREEDYDATA:content_type}|-)
+# Access Log
+ACCESS1 %{DATA:timestamp} %{NUMBER:request_msec} %{IP:src_ip} %{WORD}/%{NUMBER:response_status:int} %{NUMBER:response_size} %{WORD:http_method} %{URIPROTO:http_proto}://%{DATA:request} - %{WORD}/(%{IPV4:dst_ip}|%{IPV6:dst_ipv6}|-) (%{GREEDYDATA:content_type}|-)
+ACCESS2 %{DATA:timestamp} %{NUMBER:request_msec} %{IP:src_ip} %{WORD}/%{NUMBER:response_status:int} %{NUMBER:response_size} %{WORD:http_method} %{DATA:request} - %{WORD}/(%{IPV4:dst_ip}|%{IPV6:dst_ipv6}|-) (%{GREEDYDATA:content_type}|-)
+
+# Combine them all
+SQUID (%{ACCESS1}|%{ACCESS2})
