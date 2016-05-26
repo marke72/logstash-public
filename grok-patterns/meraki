@@ -1,34 +1,58 @@
 # IDS Alerts
 IDS ^%{GREEDYDATA} %{WORD:appliance_name} %{DATA:alert_type} signature=%{GREEDYDATA:signature_id} priority=%{NUMBER:priority:int} timestamp=%{NUMBER:timestamp:float} (shost=%{GREEDYDATA:src_host}|dhost=%{GREEDYDATA:dst_host}) direction=%{WORD:direction} protocol=%{WORD:protocol_meraki}/ip src=%{IP:src_ip}:%{NUMBER:src_port:int} dst=%{IP:dst_ip}:%{NUMBER:dst_port:int} message: %{GREEDYDATA:message_meraki}$
 
+
 # Flows
 FLOW ^%{GREEDYDATA} %{NUMBER:timestamp:float} %{WORD:appliance_name} %{WORD:event_type} src=%{IP:src_ip} dst=%{IP:dst_ip}
+
 FLOWS_MX1 %{FLOW} mac=%{MAC:mac} protocol=%{WORD:protocol_meraki} sport=%{NUMBER:src_port:int} dport=%{NUMBER:dst_port:int} pattern: (%{WORD:action}|%{NUMBER:action}) %{GREEDYDATA:pattern}$
 FLOWS_MX2 %{FLOW} protocol=%{WORD:protocol_meraki} type=%{NUMBER:type_meraki:int} pattern: (%{WORD:action}|%{NUMBER:action}) %{GREEDYDATA:pattern}$
 FLOWS_MX3 %{FLOW} mac=%{MAC:mac} protocol=%{WORD:protocol_meraki} type=%{NUMBER:type_meraki:int} pattern: (%{WORD:action}|%{NUMBER:action}) %{GREEDYDATA:pattern}$
+FLOWS_MX4 %{FLOW} protocol= pattern: (%{WORD:action}|%{NUMBER:action}) %{GREEDYDATA:pattern}$
+
 FLOWS_Z1 %{FLOW} protocol=%{WORD:protocol_meraki} sport=%{NUMBER:src_port:int} dport=%{NUMBER:dst_port:int} pattern: (%{WORD:action}|%{NUMBER:action}) %{GREEDYDATA:pattern}$
+
 FLOWS_AP ^%{GREEDYDATA} %{NUMBER} %{WORD:appliance_name} %{WORD:event_type} %{WORD:action}($| src=%{IP:src_ip} dst=%{IP:dst_ip} mac=%{MAC:mac} protocol=($|%{DATA:protocol_meraki}($| type=$| sport=%{NUMBER:src_port:int} dport=%{NUMBER:dst_port:int}$)))
+
 
 # URL Events
 URL ^%{GREEDYDATA} %{NUMBER:timestamp:float} %{WORD:appliance_name} %{WORD:event_type} src=%{IP:src_ip}:%{NUMBER:src_port:int} dst=%{IP:dst_ip}:%{NUMBER:dst_port:int} mac=%{MAC:mac}
 URLS1 %{URL} request: %{WORD:request} %{GREEDYDATA:url}$
 URLS2 %{URL} agent='%{GREEDYDATA:agent}' request: %{WORD:request} %{GREEDYDATA:url}$
 
+
 # Appliance Events
-APPLIANCE ^%{GREEDYDATA} %{NUMBER:timestamp:float} %{WORD:appliance_name} events %{DATA:event_type}
-VPN1 %{APPLIANCE} user id '%{EMAILADDRESS:user}' local ip %{IP:local_ip} connected from %{IP:src_ip}$
-VPN2 %{APPLIANCE}: %{GREEDYDATA:message_meraki}$
+APPLIANCE1 ^%{GREEDYDATA} %{NUMBER:timestamp:float} %{WORD:appliance_name} events %{DATA:event_type}
+APPLIANCE2 ^%{GREEDYDATA} %{NUMBER:timestamp:float} %{WORD:appliance_name} events type=%{DATA:event_type}
+
+VPN1 %{APPLIANCE1} user id '%{EMAILADDRESS:user}' local ip %{IP:local_ip} connected from %{IP:src_ip}$
+VPN2 %{APPLIANCE1}: %{GREEDYDATA:message_meraki}$
+VPN3 %{APPLIANCE2} vpn_type='%{WORD:vpn_type}' connectivity='{WORD:connectivity}'
 VPN (%{VPN1}|%{VPN2})
-FILTER %{APPLIANCE} url='%{DATA:url}...' category%{NUMBER:category_value:int}='%{GREEDYDATA:category}' server='%{IP:dst_ip}:%{NUMBER:dst_port:int}'
-SECURITY %{APPLIANCE} url='%{GREEDYDATA:url}' action='%{WORD:action}'
-DHCP1 %{APPLIANCE} %{WORD:dhcp_status} (for mac %{MAC:client_mac}|of ip %{IP:src_ip} from server mac %{MAC:server_mac} for client mac %{MAC:client_mac} from router %{IP:gateway} on subnet %{IP:subnet}($| with dns %{IP:dns1}($|, %{IP:dns2}$)))
-DHCP2 %{APPLIANCE} %{WORD:dhcp_status} of ip %{IP:src_ip} from server mac %{MAC:server_mac} for client mac %{MAC:client_mac} on subnet %{IP:subnet}$
+
+FILTER %{APPLIANCE1} url='%{DATA:url}...' category%{NUMBER:category_value:int}='%{GREEDYDATA:category}' server='%{IP:dst_ip}:%{NUMBER:dst_port:int}'
+
+SECURITY %{APPLIANCE1} url='%{GREEDYDATA:url}' action='%{WORD:action}'
+
+DHCP1 %{APPLIANCE1} %{WORD:dhcp_status} (for mac %{MAC:client_mac}|of ip %{IP:src_ip} from server mac %{MAC:server_mac} for client mac %{MAC:client_mac} from router %{IP:gateway} on subnet %{IP:subnet}($| with dns %{IP:dns1}($|, %{IP:dns2}$)))
+DHCP2 %{APPLIANCE1} %{WORD:dhcp_status} of ip %{IP:src_ip} from server mac %{MAC:server_mac} for client mac %{MAC:client_mac} on subnet %{IP:subnet}$
 DHCP (%{DHCP1}|%{DHCP2})
-ROUTE1 %{GREEDYDATA} %{NUMBER:timestamp:float} %{WORD:appliance_name} events type=%{DATA:event_type} peer_type='%{DATA:peer_type}' peer='%{MAC:mac}' connection_status='%{WORD:connection_status}'$
-ROUTE2 %{GREEDYDATA} %{NUMBER:timestamp:float} %{WORD:appliance_name} events type=%{DATA:event_type} vpn_type='%{DATA:vpn_type}' peer_contact='%{IP:src_ip}:%{NUMBER:src_port:int}' peer_ident='%{DATA:peer_ident}' connectivity='%{WORD:connectivity}'$
+
+ROUTE1 %{APPLIANCE2} peer_type='%{DATA:peer_type}' peer='(%{MAC:src_mac}|%{IP:src_ip})' connection_status='%{WORD:connection_status}'$
+ROUTE2 %{APPLIANCE2} vpn_type='%{DATA:vpn_type}' peer_contact='%{IP:src_ip}:%{NUMBER:src_port:int}' (|peer_ident='%{DATA:peer_ident}' )connectivity='%{WORD:connectivity}'$
 ROUTE (%{ROUTE1}|%{ROUTE2})
 
+RADIO %{APPLIANCE2} radio='%{NUMBER:radio:int}' vap='%{NUMBER:vap:int}' client_mac='%{MAC:client_mac}'
+RADIO1 %{RADIO} channel='%{NUMBER:channel:int}' duration='%{NUMBER:duration:float}' auth_neg_failed='%{NUMBER:auth_neg_failed:int}' is_wpa='%{NUMBER:is_wpa:int}' aid='%{NUMBER:aid:int}'$
+RADIO2 %{RADIO} channel='%{NUMBER:channel:int}' reason='%{NUMBER:reason:int}' instigator='%{NUMBER:instigator:int}' duration='%{NUMBER:duration:float}' auth_neg_failed='%{NUMBER:auth_neg_failed:int}' is_wpa='%{NUMBER:is_wpa:int}' aid='%{NUMBER:aid:int}'$
+RADIO3 %{RADIO} client_ip='%{IP:client_ip}' aid='%{NUMBER:aid:int}'$
+RADIO4 %{RADIO} client_ip='%{IP:client_ip}' channel='%{NUMBER:channel:int}' rssi='%{NUMBER:rssi:int}' aid='%{NUMBER:aid:int}'$
+RADIOS (%{RADIO1}|%{RADIO2}|%{RADIO3}|%{RADIO4})
+
+FAILOVER %{APPLIANCE1} to %{WORD:port}
+
+
 # Combine them all based off type
-FLOWS (%{FLOWS_MX1}|%{FLOWS_MX2}|%{FLOWS_MX3}|%{FLOWS_Z1}|%{FLOWS_AP})
+FLOWS (%{FLOWS_MX1}|%{FLOWS_MX2}|%{FLOWS_MX3}|%{FLOWS_MX4}|%{FLOWS_Z1}|%{FLOWS_AP})
 URLS (%{URLS1}|%{URLS2})
-APPLIANCE_EVENTS (%{VPN}|%{FILTER}|%{SECURITY}|%{DHCP}|%{ROUTE})
+APPLIANCE_EVENTS (%{VPN}|%{FILTER}|%{SECURITY}|%{DHCP}|%{ROUTE}|%{RADIOS}|%{FAILOVER})
