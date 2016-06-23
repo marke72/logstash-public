@@ -1,2 +1,13 @@
 # PureMessage
 PUREMESSAGE Blocked message '<%{DATA}@%{DATA:sender_domain}>' for invalid recipients '%{DATA:recipient_email}'
+
+# DNS
+HEX [0-9a-fA-F]+
+WIN_DNS_DATE %{DATE_US} %{TIME} (?:AM|PM)
+DNS_CHAR_CODES (%{WORD}|%{WORD}\s+%{WORD})
+DNS_QR (%SPACE|%{WORD})
+
+WIN_DNS %{WIN_DNS_DATE:timestamp} %{HEX:dns_thread_id} %{WORD:dns_context}\s+%{HEX:dns_packet_id} %{WORD:dns_ip_protocol} %{WORD:dns_direction} %{IP:dns_client_address}\s+%{HEX:dns_xid}(|\s+%{DNS_QR:dns_qr})\s+%{WORD:dns_opcode} \[%{HEX:dns_hex_flags}(|\s+%{DNS_CHAR_CODES:dns_char_codes})\s+%{WORD:dns_response}\]\s+%{WORD:dns_recordtype}\s+%{GREEDYDATA:dns_query_name}
+
+# DHCP
+WIN_DHCP %{DATA:id},%{DATE_US:date},(?<time>%{HOUR}:%{MINUTE}:%{SECOND}),%{DATA:description},%{IPV4:ip},%{DATA:Hostname},%{DATA:mac},%{DATA:Username},%{INT:TransactionID},%{INT:QResult},%{DATA:ProbationTime},%{DATA:CorrelationID}
