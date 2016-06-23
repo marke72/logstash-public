@@ -27,8 +27,9 @@ APPLIANCE2 ^%{GREEDYDATA} %{NUMBER:timestamp:float} %{WORD:appliance_name} event
 
 VPN1 %{APPLIANCE1} user id '%{EMAILADDRESS:user}' local ip %{IP:local_ip} connected from %{IP:src_ip}$
 VPN2 %{APPLIANCE1}: %{GREEDYDATA:message_meraki}$
-VPN3 %{APPLIANCE2} vpn_type='%{WORD:vpn_type}' connectivity='{WORD:connectivity}'
-VPN (%{VPN1}|%{VPN2})
+VPN3 %{APPLIANCE2} vpn_type='%{DATA:vpn_type}' connectivity='%{WORD:connectivity}'$
+VPN4 %{APPLIANCE2} vpn_type='%{DATA:vpn_type}' peer_contact='%{IP:src_ip}:%{NUMBER:src_port:int}' (|peer_ident='%{DATA:peer_ident}' )connectivity='%{WORD:connectivity}'$
+VPN (%{VPN1}|%{VPN2}|%{VPN3}|%{VPN4})
 
 FILTER %{APPLIANCE1} url='%{DATA:url}...' category%{NUMBER:category_value:int}='%{GREEDYDATA:category}' server='%{IP:dst_ip}:%{NUMBER:dst_port:int}'
 
@@ -38,11 +39,10 @@ DHCP1 %{APPLIANCE1} %{WORD:dhcp_status} (for mac %{MAC:client_mac}|of ip %{IP:sr
 DHCP2 %{APPLIANCE1} %{WORD:dhcp_status} of ip %{IP:src_ip} from server mac %{MAC:server_mac} for client mac %{MAC:client_mac} on subnet %{IP:subnet}$
 DHCP (%{DHCP1}|%{DHCP2})
 
-ROUTE1 %{APPLIANCE2} peer_type='%{DATA:peer_type}' peer='(%{MAC:src_mac}|%{IP:src_ip})' connection_status='%{WORD:connection_status}'$
-ROUTE2 %{APPLIANCE2} vpn_type='%{DATA:vpn_type}' peer_contact='%{IP:src_ip}:%{NUMBER:src_port:int}' (|peer_ident='%{DATA:peer_ident}' )connectivity='%{WORD:connectivity}'$
-ROUTE (%{ROUTE1}|%{ROUTE2})
+ROUTE %{APPLIANCE2} peer_type='%{DATA:peer_type}' peer='(%{MAC:src_mac}|%{IP:src_ip})' connection_status='%{WORD:connection_status}'$
 
-RADIO %{APPLIANCE2} radio='%{NUMBER:radio:int}' vap='%{NUMBER:vap:int}' client_mac='%{MAC:client_mac}'
+# These also apply to Wireless Events
+RADIO %{APPLIANCE2}(| radio='%{NUMBER:radio:int}') vap='%{NUMBER:vap:int}'(| client_mac='%{MAC:client_mac}')
 RADIO1 %{RADIO} channel='%{NUMBER:channel:int}' duration='%{NUMBER:duration:float}' auth_neg_failed='%{NUMBER:auth_neg_failed:int}' is_wpa='%{NUMBER:is_wpa:int}' aid='%{NUMBER:aid:int}'$
 RADIO2 %{RADIO} channel='%{NUMBER:channel:int}' reason='%{NUMBER:reason:int}' instigator='%{NUMBER:instigator:int}' duration='%{NUMBER:duration:float}' auth_neg_failed='%{NUMBER:auth_neg_failed:int}' is_wpa='%{NUMBER:is_wpa:int}' aid='%{NUMBER:aid:int}'$
 RADIO3 %{RADIO} client_ip='%{IP:client_ip}' aid='%{NUMBER:aid:int}'$
@@ -52,7 +52,56 @@ RADIOS (%{RADIO1}|%{RADIO2}|%{RADIO3}|%{RADIO4})
 FAILOVER %{APPLIANCE1} to %{WORD:port}
 
 
+# Wireless Events
+WORIG_SERVER_IP original_server_ip='%{IP:original_server_ip}'
+WORIG_SERVER_MAC original_server_mac='%{MAC:original_server_mac}'
+WSERVER_IP server_ip='%{IP:server_ip}'
+WSERVER_MAC server_mac='%{MAC:server_mac}'
+WCIP client_ip='%{IP:client_ip}'
+WCH channel='%{NUMBER:channel:int}'
+WRSSI rssi='%{NUMBER:rssi:int}'
+WREASON reason='%{NUMBER:reason:int}'
+WINSTIGATOR instigator='%{NUMBER:instigator:int}'
+WDURATION duration='%{NUMBER:duration:float}'
+WAUTH_FAILED auth_neg_failed='%{NUMBER:auth_neg_failed:int}'
+WAUTH_DUR auth_neg_dur='%{NUMBER:auth_neg_dur:float}'
+WLAST_AUTH last_auth_ago='%{NUMBER:last_auth_ago:float}'
+WIS_WPA is_wpa='%{NUMBER:is_wpa:int}'
+WFULL_CONN full_conn='%{NUMBER:full_conn:float}'
+WHTTP_FAILED http_request_failed='%{NUMBER:http_request_failed:int}'
+WHTTP_SERVER_IP http_request_server='%{IP:http_request_server}'
+WIP1 ip_request_failed='%{NUMBER:ip_request_failed:int}'
+WIP2 ip_request_remote='%{IP:ip_request_remote}'
+WIP3 ip_resp='%{NUMBER:ip_resp:float}'
+WIP4 ip_src='%{IP:src_ip}'
+WHTTP_RESP http_resp='%{NUMBER:http_resp:float}'
+WARP1 arp_request_failed='%{NUMBER:arp_request_failed:int}'
+WARP2 arp_request_ip='%{IP:arp_request_ip}'
+WARP3 arp_resp='%{NUMBER:arp_resp:float}'
+WARP4 arp_src='%{IP:arp_src}'
+WDNS_FAILED dns_requests_failed='%{NUMBER:dns_requests_failed:int}'
+WDNS1 dns_server='%{IP:dns_server}'
+WDNS2 dns_req_rtt='%{NUMBER:dns_req_rtt:float}'
+WDNS3 dns_resp='%{NUMBER:dns_resp:float}'
+WDHCP1 dhcp_lease_completed='%{NUMBER:dhcp_lease_completed:float}'
+WDHCP2 dhcp_ip='%{IP:dhcp_ip}'
+WDHCP3 dhcp_server='%{IP:dhcp_server}'
+WDHCP4 dhcp_server_mac='%{MAC:dhcp_server_mac}'
+WDHCP5 dhcp_resp='%{NUMBER:dhcp_resp:float}'
+WDHCP_FAILED dhcp_failed='%{NUMBER:dhcp_failed:int}'
+WAID aid='%{NUMBER:aid:int}'
+
+WIP ip='%{IP:ip}'
+VAP vap='%{NUMBER:vap:int}'
+WIRED_LAN wired_lan='%{INT:wired_lan}'
+DOWNLOAD download='%{NUMBER:download:int}bps'
+UPLOAD upload='%{NUMBER:upload:int}bps'
+
+WIRELESS1 %{RADIO}(| %{WORIG_SERVER_IP})(| %{WORIG_SERVER_MAC})(| %{WSERVER_IP})(| %{WSERVER_MAC})(| %{WCIP})(| %{WCH})(| %{WRSSI})(| %{WREASON})(| %{WINSTIGATOR})(| %{WDURATION})(| %{WAUTH_FAILED})(| %{WAUTH_DUR})(| %{WLAST_AUTH})(| %{WIS_WPA})(| %{WFULL_CONN})(| %{WHTTP_FAILED})(| %{WHTTP_SERVER_IP})(| %{WIP1})(| %{WIP2})(| %{WIP3})(| %{WIP4})(| %{WHTTP_RESP})(| %{WARP1})(| %{WARP2})(| %{WARP3})(| %{WARP4})(| %{WDNS_FAILED})(| %{WDNS1})(| %{WDNS2})(| %{WDNS3})(| %{WDHCP1})(| %{WDHCP2})(| %{WDHCP3})(| %{WDHCP4})(| %{WDHCP5})(| %{WDHCP_FAILED})(| %{WAID})$
+WIRELESS2 %{APPLIANCE2}(| %{WIP})(| %{WDURATION})(| %{VAP})(| %{WIRED_LAN})(| %{DOWNLOAD})(| %{UPLOAD})$
+
 # Combine them all based off type
 FLOWS (%{FLOWS_MX1}|%{FLOWS_MX2}|%{FLOWS_MX3}|%{FLOWS_MX4}|%{FLOWS_Z1}|%{FLOWS_AP})
 URLS (%{URLS1}|%{URLS2})
 APPLIANCE_EVENTS (%{VPN}|%{FILTER}|%{SECURITY}|%{DHCP}|%{ROUTE}|%{RADIOS}|%{FAILOVER})
+WIRELESS_EVENTS (%{WIRELESS1}|%{WIRELESS2})
